@@ -1,0 +1,22 @@
+{
+  "name": "@wren/client",
+  "version": "0.1.0",
+  "description": "TypeScript/JavaScript client for the Wren versioned document store",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/bun": "latest"
+  },
+  "engines": { "node": ">=18" }
+}
