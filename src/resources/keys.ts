@@ -5,17 +5,17 @@ export class KeysResource {
   constructor(private readonly client: WrenClient) {}
 
   list(): Promise<{ keys: ApiKey[] }> {
-    return this.client.request<{ keys: ApiKey[] }>("GET", "/api/keys");
+    return this.client.request<{ keys: ApiKey[] }>("GET", "/keys");
   }
 
   create(name: string): Promise<ApiKeyCreated> {
-    return this.client.request<ApiKeyCreated>("POST", "/api/keys", { name });
+    return this.client.request<ApiKeyCreated>("POST", "/keys", { name });
   }
 
   revoke(id: string): Promise<{ id: string; revoked: true }> {
     return this.client.request<{ id: string; revoked: true }>(
       "DELETE",
-      `/api/keys/${encodeURIComponent(id)}`,
+      `/keys/${encodeURIComponent(id)}`,
     );
   }
 }

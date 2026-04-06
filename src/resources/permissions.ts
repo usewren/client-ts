@@ -5,17 +5,17 @@ export class PermissionsResource {
   constructor(private readonly client: WrenClient) {}
 
   list(): Promise<{ permissions: Permission[] }> {
-    return this.client.request<{ permissions: Permission[] }>("GET", "/api/permissions");
+    return this.client.request<{ permissions: Permission[] }>("GET", "/permissions");
   }
 
   create(opts: CreatePermissionOptions): Promise<Permission> {
-    return this.client.request<Permission>("POST", "/api/permissions", opts);
+    return this.client.request<Permission>("POST", "/permissions", opts);
   }
 
   update(id: string, patch: UpdatePermissionOptions): Promise<Permission> {
     return this.client.request<Permission>(
       "PUT",
-      `/api/permissions/${encodeURIComponent(id)}`,
+      `/permissions/${encodeURIComponent(id)}`,
       patch,
     );
   }
@@ -23,7 +23,7 @@ export class PermissionsResource {
   delete(id: string): Promise<{ id: string; deleted: true }> {
     return this.client.request<{ id: string; deleted: true }>(
       "DELETE",
-      `/api/permissions/${encodeURIComponent(id)}`,
+      `/permissions/${encodeURIComponent(id)}`,
     );
   }
 }

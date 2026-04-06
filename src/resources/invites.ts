@@ -5,11 +5,11 @@ export class InvitesResource {
   constructor(private readonly client: WrenClient) {}
 
   listSent(): Promise<{ invites: Invite[] }> {
-    return this.client.request<{ invites: Invite[] }>("GET", "/api/invites");
+    return this.client.request<{ invites: Invite[] }>("GET", "/invites");
   }
 
   create(email: string, role?: string): Promise<InviteCreated> {
-    return this.client.request<InviteCreated>("POST", "/api/invites", {
+    return this.client.request<InviteCreated>("POST", "/invites", {
       email,
       ...(role !== undefined ? { role } : {}),
     });
@@ -18,18 +18,18 @@ export class InvitesResource {
   revoke(id: string): Promise<{ id: string; revoked: true }> {
     return this.client.request<{ id: string; revoked: true }>(
       "DELETE",
-      `/api/invites/${encodeURIComponent(id)}`,
+      `/invites/${encodeURIComponent(id)}`,
     );
   }
 
   listReceived(): Promise<{ invites: ReceivedInvite[] }> {
-    return this.client.request<{ invites: ReceivedInvite[] }>("GET", "/api/invites/received");
+    return this.client.request<{ invites: ReceivedInvite[] }>("GET", "/invites/received");
   }
 
   accept(token: string): Promise<{ accepted: true; orgId: string }> {
     return this.client.request<{ accepted: true; orgId: string }>(
       "POST",
-      "/api/invites/accept",
+      "/invites/accept",
       { token },
     );
   }
@@ -37,7 +37,7 @@ export class InvitesResource {
   acceptById(id: string): Promise<{ accepted: true; orgId: string }> {
     return this.client.request<{ accepted: true; orgId: string }>(
       "POST",
-      `/api/invites/${encodeURIComponent(id)}/accept`,
+      `/invites/${encodeURIComponent(id)}/accept`,
     );
   }
 }

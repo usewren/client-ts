@@ -5,13 +5,13 @@ export class MembersResource {
   constructor(private readonly client: WrenClient) {}
 
   list(): Promise<{ members: Member[] }> {
-    return this.client.request<{ members: Member[] }>("GET", "/api/members");
+    return this.client.request<{ members: Member[] }>("GET", "/members");
   }
 
   remove(id: string): Promise<{ userId: string; removed: true }> {
     return this.client.request<{ userId: string; removed: true }>(
       "DELETE",
-      `/api/members/${encodeURIComponent(id)}`,
+      `/members/${encodeURIComponent(id)}`,
     );
   }
 }
