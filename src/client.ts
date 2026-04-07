@@ -62,7 +62,7 @@ export class WrenClient {
     body?: unknown,
     query?: QueryParams,
   ): Promise<T> {
-    const url = new URL(this.baseUrl + path);
+    const url = new URL(this.baseUrl + "/api/v1" + path);
 
     if (query) {
       for (const [key, value] of Object.entries(query)) {
