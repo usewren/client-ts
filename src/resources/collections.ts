@@ -1,5 +1,5 @@
 import type { WrenClient } from "../client.ts";
-import type { CollectionInfo, Schema, SetSchemaOptions } from "../types.ts";
+import type { CollectionInfo, Schema, SetSchemaOptions, ValidateSchemaResult } from "../types.ts";
 
 export class CollectionsResource {
   constructor(private readonly client: WrenClient) {}
@@ -20,6 +20,17 @@ export class CollectionsResource {
     return this.client.request<{ collection: string; deleted: true }>(
       "DELETE",
       `/${collection}/_schema`,
+    );
+  }
+
+  validate(
+    collection: string,
+    proposedSchema?: Record<string, unknown>,
+  ): Promise<ValidateSchemaResult> {
+    return this.client.request<ValidateSchemaResult>(
+      "POST",
+      `/${collection}/_schema/validate`,
+      proposedSchema !== undefined ? { schema: proposedSchema } : undefined,
     );
   }
 }

@@ -12,10 +12,13 @@ import { DocumentsResource } from "./resources/documents.ts";
 import { InvitesResource } from "./resources/invites.ts";
 import { KeysResource } from "./resources/keys.ts";
 import { LabelsResource } from "./resources/labels.ts";
+import { MaterializedResource } from "./resources/materialized.ts";
 import { MembersResource } from "./resources/members.ts";
 import { PermissionsResource } from "./resources/permissions.ts";
+import { QueryResource } from "./resources/query.ts";
 import { TreesResource } from "./resources/trees.ts";
 import { VersionsResource } from "./resources/versions.ts";
+import { WebhooksResource } from "./resources/webhooks.ts";
 
 type QueryParams = Record<string, string | undefined>;
 
@@ -33,6 +36,9 @@ export class WrenClient {
   readonly members: MembersResource;
   readonly invites: InvitesResource;
   readonly permissions: PermissionsResource;
+  readonly query: QueryResource;
+  readonly materialized: MaterializedResource;
+  readonly webhooks: WebhooksResource;
 
   constructor(opts: WrenClientOptions) {
     this.baseUrl = opts.baseUrl.replace(/\/$/, "");
@@ -54,6 +60,9 @@ export class WrenClient {
     this.members = new MembersResource(this);
     this.invites = new InvitesResource(this);
     this.permissions = new PermissionsResource(this);
+    this.query = new QueryResource(this);
+    this.materialized = new MaterializedResource(this);
+    this.webhooks = new WebhooksResource(this);
   }
 
   async request<T>(

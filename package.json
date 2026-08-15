@@ -1,6 +1,6 @@
 {
   "name": "@wren/client",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "description": "TypeScript/JavaScript client for the Wren versioned document store",
   "license": "MIT",
   "type": "module",

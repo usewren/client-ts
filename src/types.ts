@@ -71,6 +71,9 @@ export interface Schema {
   collectionType: "json" | "binary";
   schema: Record<string, unknown> | null;
   displayName: string | null;
+  naturalKey: string | null;
+  listColumns: string[] | null;
+  indexes: Array<{ path: string; kind: "btree" | "gin" | "trigram" }> | null;
   updatedAt: string;
 }
 
@@ -78,6 +81,9 @@ export interface SetSchemaOptions {
   schema?: Record<string, unknown>;
   displayName?: string;
   collectionType?: "json" | "binary";
+  naturalKey?: string;
+  listColumns?: string[];
+  indexes?: Array<{ path: string; kind: "btree" | "gin" | "trigram" }>;
 }
 
 export interface TreeInfo {
@@ -152,6 +158,7 @@ export interface Permission {
   labelFilter: string | null;
   filterLang: "jq" | "jmespath" | "jsonata" | null;
   filterExpr: string | null;
+  alias: string | null;
   auditReads: boolean;
   auditWrites: boolean;
   createdAt: string;
@@ -164,6 +171,7 @@ export interface CreatePermissionOptions {
   labelFilter?: string;
   filterLang?: "jq" | "jmespath" | "jsonata";
   filterExpr?: string;
+  alias?: string | null;
   auditReads?: boolean;
   auditWrites?: boolean;
 }
@@ -173,6 +181,7 @@ export interface UpdatePermissionOptions {
   labelFilter?: string;
   filterLang?: "jq" | "jmespath" | "jsonata";
   filterExpr?: string;
+  alias?: string | null;
   auditReads?: boolean;
   auditWrites?: boolean;
 }
@@ -180,7 +189,77 @@ export interface UpdatePermissionOptions {
 export interface ListDocumentsOptions {
   label?: string;
   filter?: string;
+  select?: string;
+  where?: string;
   limit?: number;
   cursor?: string;
   facets?: string;
+  depth?: number;
+}
+
+export interface DocumentGetOptions {
+  label?: string;
+  depth?: number;
+}
+
+export interface QueryRequest {
+  where?: string;
+  select?: string[];
+  aggregate?: { groupBy?: string[]; metrics?: Record<string, Record<string, string>> };
+  label?: string;
+  limit?: number;
+  cursor?: string;
+}
+
+export interface QueryResult {
+  items?: Array<{ id: string; version: number; data: Record<string, unknown> }>;
+  rows?: Array<Record<string, unknown>>;
+  cursor?: string | null;
+}
+
+export interface MaterializedQuery {
+  name: string;
+  refreshOn: string;
+  resultDocId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MaterializedResult {
+  collection: string;
+  name: string;
+  result: { id: string; version: number; data: Record<string, unknown> };
+}
+
+export interface Webhook {
+  id: string;
+  url: string;
+  events: string[];
+  enabled: boolean;
+  consecFailures: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WebhookCreated extends Webhook {
+  secret: string;
+}
+
+export interface WebhookDelivery {
+  id: string;
+  batchKey: string;
+  eventCount: number;
+  attempt: number;
+  statusCode: number | null;
+  error: string | null;
+  deliveredAt: string;
+}
+
+export interface ValidateSchemaResult {
+  collection: string;
+  schemaSource: "current" | "proposed";
+  checked: number;
+  valid: number;
+  invalid: number;
+  failures: Array<{ id: string; version: number; errors: string[] }>;
 }
