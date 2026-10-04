@@ -3,11 +3,11 @@
 Official TypeScript/JavaScript client for the [WREN](https://wren.aemwip.com) API.
 
 ```bash
-npm install @wren/client
+npm install @usewren/client
 ```
 
 ```typescript
-import { WrenClient } from "@wren/client";
+import { WrenClient } from "@usewren/client";
 
 const wren = new WrenClient({ baseUrl: "https://wren.aemwip.com", apiKey: "wren_..." });
 const doc = await wren.documents.create("articles", { title: "Hello" });
