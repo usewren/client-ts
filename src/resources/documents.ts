@@ -13,12 +13,10 @@ export class DocumentsResource {
   list(collection: string, opts?: ListDocumentsOptions): Promise<DocumentList> {
     return this.client.request<DocumentList>("GET", `/${collection}`, undefined, {
       label: opts?.label,
-      filter: opts?.filter,
       select: opts?.select,
       where: opts?.where,
       limit: opts?.limit !== undefined ? String(opts.limit) : undefined,
-      cursor: opts?.cursor,
-      facets: opts?.facets,
+      offset: opts?.offset !== undefined ? String(opts.offset) : undefined,
       depth: opts?.depth !== undefined ? String(opts.depth) : undefined,
     });
   }
@@ -72,7 +70,7 @@ export class DocumentsResource {
   ): Promise<DocumentResponse> {
     return this.client.request<DocumentResponse>(
       "GET",
-      `/${collection}/key/${encodeURIComponent(keyValue)}`,
+      `/${collection}/by-key/${encodeURIComponent(keyValue)}`,
       undefined,
       {
         label: opts?.label,
@@ -88,7 +86,7 @@ export class DocumentsResource {
   ): Promise<DocumentResponse> {
     return this.client.request<DocumentResponse>(
       "PUT",
-      `/${collection}/key/${encodeURIComponent(keyValue)}`,
+      `/${collection}/by-key/${encodeURIComponent(keyValue)}`,
       data,
     );
   }
@@ -96,7 +94,7 @@ export class DocumentsResource {
   deleteByKey(collection: string, keyValue: string): Promise<{ id: string; deleted: true }> {
     return this.client.request<{ id: string; deleted: true }>(
       "DELETE",
-      `/${collection}/key/${encodeURIComponent(keyValue)}`,
+      `/${collection}/by-key/${encodeURIComponent(keyValue)}`,
     );
   }
 }

@@ -13,16 +13,9 @@ export interface DocumentResponse {
   data: Record<string, unknown>;
 }
 
-export interface FacetValue {
-  value: string;
-  count: number;
-}
-
 export interface DocumentList {
   collection: string;
   total: number;
-  cursor: string | null;
-  facets: Record<string, FacetValue[]>;
   items: DocumentResponse[];
 }
 
@@ -188,12 +181,14 @@ export interface UpdatePermissionOptions {
 
 export interface ListDocumentsOptions {
   label?: string;
-  filter?: string;
+  // Comma-separated field paths to project, e.g. "title,author.name"
   select?: string;
+  // Filter expression, e.g. "status:published" or "price>10"
   where?: string;
+  // Page size (server default 50, max 200)
   limit?: number;
-  cursor?: string;
-  facets?: string;
+  // Number of documents to skip, for paging with limit
+  offset?: number;
   depth?: number;
 }
 
