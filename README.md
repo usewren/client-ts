@@ -16,12 +16,19 @@ await wren.trees.assign("site", "/blog/hello", doc.id);
 
 const page = await wren.documents.list("articles", { where: "title:Hello", limit: 20, offset: 0 });
 const pinned = await wren.documents.get("articles", doc.id, { label: "published" });
+
+// Retention (org owner/admin): keep the newest 20 versions everywhere, but everything in "contracts".
+// A document's current version and every labeled version are always kept.
+const { total } = await wren.retention.preview("*", { maxVersions: 20 }); // { versions, documents, bytes }; changes nothing
+await wren.retention.set("*", { maxVersions: 20 });
+await wren.retention.set("contracts", {}); // no rule = keep everything
+await wren.retention.apply();              // or wait for the hourly run
 ```
 
 - Node >= 18, Bun, Browser
 - Zero runtime dependencies
 - Full TypeScript types
-- Resources: documents, versions, labels, diff, collections, trees, query, materialized, keys, members, invites, permissions, webhooks
+- Resources: documents, versions, labels, diff, collections, trees, query, materialized, keys, members, invites, permissions, webhooks, retention
 
 ## Running the tests
 
