@@ -1,5 +1,11 @@
 import type { WrenClient } from "../client.ts";
-import type { FullTree, TreeInfo, TreeNodeResult } from "../types.ts";
+import type {
+  FullTree,
+  TreeInfo,
+  TreeNodeResult,
+  TreePromoteOptions,
+  TreePromoteResult,
+} from "../types.ts";
 
 function normalizePath(path: string): string {
   return path.startsWith("/") ? path : `/${path}`;
@@ -44,6 +50,21 @@ export class TreesResource {
     return this.client.request<{ path: string; removed: true }>(
       "DELETE",
       `/tree/${encodeURIComponent(name)}${normalizedPath}`,
+    );
+  }
+
+  /**
+   * Atomically point `label` (default "published") at, for every document in
+   * the tree, the version carrying `from` — or the current version when `from`
+   * is omitted. One transaction: readers never see a half-promoted tree.
+   * Throws WrenNotFoundError if the tree is empty (or nothing carries `from`)
+   * and WrenForbiddenError if a collection isn't writable (nothing changes).
+   */
+  promote(name: string, opts?: TreePromoteOptions): Promise<TreePromoteResult> {
+    return this.client.request<TreePromoteResult>(
+      "POST",
+      `/tree/${encodeURIComponent(name)}/_promote`,
+      { label: opts?.label, from: opts?.from },
     );
   }
 }

@@ -79,4 +79,48 @@ describe("trees", () => {
   it("unassign of a missing path throws WrenNotFoundError", async () => {
     await expect(wren.trees.unassign(`nope-${uid()}`, "/missing")).rejects.toBeInstanceOf(WrenNotFoundError);
   });
+
+  it("promote labels every document's current version as published by default", async () => {
+    const tree = `site-${uid()}`;
+    const a = await wren.documents.create(col, { title: "A1" });
+    const b = await wren.documents.create(col, { title: "B1" });
+    await wren.documents.update(col, a.id, { title: "A2" });
+    await wren.trees.assign(tree, "/index.html", a.id);
+    await wren.trees.assign(tree, "/about.html", b.id);
+
+    const res = await wren.trees.promote(tree);
+    expect(res.tree).toBe(tree);
+    expect(res.label).toBe("published");
+    expect(res.from).toBeNull();
+    const byPath = Object.fromEntries(res.promoted.map((p) => [p.path, p]));
+    expect(byPath["/index.html"]).toEqual({ path: "/index.html", documentId: a.id, collection: col, version: 2 });
+    expect(byPath["/about.html"]).toEqual({ path: "/about.html", documentId: b.id, collection: col, version: 1 });
+
+    const pub = await wren.documents.get(col, a.id, { label: "published" });
+    expect(pub.data.title).toBe("A2");
+  });
+
+  it("promote from a label moves only documents carrying it, under a custom label", async () => {
+    const tree = `site-${uid()}`;
+    const a = await wren.documents.create(col, { title: "A1" });
+    const b = await wren.documents.create(col, { title: "B1" });
+    await wren.labels.set(col, a.id, "preview");
+    await wren.documents.update(col, a.id, { title: "A2 draft" });
+    await wren.trees.assign(tree, "/a", a.id);
+    await wren.trees.assign(tree, "/b", b.id);
+
+    const res = await wren.trees.promote(tree, { label: "live", from: "preview" });
+    expect(res).toEqual({
+      tree,
+      label: "live",
+      from: "preview",
+      promoted: [{ path: "/a", documentId: a.id, collection: col, version: 1 }],
+    });
+    expect((await wren.documents.get(col, a.id, { label: "live" })).data.title).toBe("A1");
+    await expect(wren.documents.get(col, b.id, { label: "live" })).rejects.toBeInstanceOf(WrenNotFoundError);
+  });
+
+  it("promote of an empty tree throws WrenNotFoundError", async () => {
+    await expect(wren.trees.promote(`nope-${uid()}`)).rejects.toBeInstanceOf(WrenNotFoundError);
+  });
 });
