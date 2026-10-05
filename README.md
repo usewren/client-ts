@@ -14,6 +14,10 @@ const doc = await wren.documents.create("articles", { title: "Hello" });
 await wren.labels.set("articles", doc.id, "published");
 await wren.trees.assign("site", "/blog/hello", doc.id);
 
+// Promote a whole tree atomically: point "published" at every document's "preview"
+// version in one transaction (omit `from` to promote current versions).
+const { promoted } = await wren.trees.promote("site", { label: "published", from: "preview" });
+
 const page = await wren.documents.list("articles", { where: "title:Hello", limit: 20, offset: 0 });
 const pinned = await wren.documents.get("articles", doc.id, { label: "published" });
 

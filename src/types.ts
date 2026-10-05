@@ -91,6 +91,23 @@ export interface TreeNodeResult {
   children: Array<{ path: string; documentId: string | null }>;
 }
 
+export interface TreePromoteOptions {
+  /** Label to point at the promoted versions. Defaults to "published" on the server. */
+  label?: string;
+  /**
+   * Promote the version carrying this label (e.g. "preview"). Documents without
+   * it are left alone. Omitted: each document's current version is promoted.
+   */
+  from?: string;
+}
+
+export interface TreePromoteResult {
+  tree: string;
+  label: string;
+  from: string | null;
+  promoted: Array<{ path: string; documentId: string; collection: string; version: number }>;
+}
+
 export interface FullTree {
   tree: string;
   nodes: Array<{ path: string; documentId: string; document: DocumentResponse }>;
