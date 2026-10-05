@@ -129,9 +129,16 @@ function extractValidationDetails(body: unknown): string[] {
   if (body === null || typeof body !== "object") return [];
   const obj = body as Record<string, unknown>;
 
-  if (Array.isArray(obj["errors"])) {
-    return (obj["errors"] as unknown[])
+  // The server sends { error, details: [...] } for schema violations and
+  // { error, details: "..." } for an invalid schema; prefer those over `error`.
+  const list = obj["details"] ?? obj["errors"];
+  if (Array.isArray(list)) {
+    return (list as unknown[])
       .map((e) => (typeof e === "string" ? e : JSON.stringify(e)));
+  }
+
+  if (typeof list === "string") {
+    return [list];
   }
 
   if (typeof obj["message"] === "string") {

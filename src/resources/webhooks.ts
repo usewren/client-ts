@@ -18,11 +18,13 @@ export class WebhooksResource {
     });
   }
 
+  // The server answers with { id, updated: true }, not the webhook itself;
+  // call list() to read the new state.
   update(
     id: string,
     opts: { url?: string; events?: string[]; enabled?: boolean },
-  ): Promise<Webhook> {
-    return this.client.request<Webhook>(
+  ): Promise<{ id: string; updated: true }> {
+    return this.client.request<{ id: string; updated: true }>(
       "PUT",
       `/webhooks/${encodeURIComponent(id)}`,
       opts,
