@@ -258,3 +258,53 @@ export interface ValidateSchemaResult {
   invalid: number;
   failures: Array<{ id: string; version: number; errors: string[] }>;
 }
+
+/** Retention rules; a version is removed if any rule says so. Current and labeled versions are always kept. */
+export interface RetentionRules {
+  /** Keep only labeled versions. */
+  labeledOnly?: boolean;
+  /** Keep the newest n versions (the current one counts). */
+  maxVersions?: number | null;
+  /** Remove versions older than n days. */
+  maxAgeDays?: number | null;
+  /** Remove versions older than the version this label points to. */
+  afterLabel?: string | null;
+}
+
+export interface RetentionPolicy {
+  /** The collection, or "*" for the org default. */
+  collection: string;
+  labeledOnly: boolean;
+  maxVersions: number | null;
+  maxAgeDays: number | null;
+  afterLabel: string | null;
+  updatedAt: string;
+  updatedBy: string | null;
+}
+
+export interface RetentionRun {
+  collection: string;
+  versionsRemoved: number;
+  bytesFreed: number;
+  /** The user who applied the policies, or "schedule" for the hourly run. */
+  triggeredBy: string | null;
+  ranAt: string;
+}
+
+export interface RetentionOverview {
+  default: RetentionPolicy | null;
+  collections: RetentionPolicy[];
+  runs: RetentionRun[];
+}
+
+export interface RetentionCount {
+  versions: number;
+  documents: number;
+  bytes: number;
+}
+
+export interface RetentionResult {
+  /** Only collections where something is (or would be) removed. */
+  collections: Array<RetentionCount & { collection: string }>;
+  total: RetentionCount;
+}

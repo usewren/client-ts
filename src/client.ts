@@ -16,6 +16,7 @@ import { MaterializedResource } from "./resources/materialized.ts";
 import { MembersResource } from "./resources/members.ts";
 import { PermissionsResource } from "./resources/permissions.ts";
 import { QueryResource } from "./resources/query.ts";
+import { RetentionResource } from "./resources/retention.ts";
 import { TreesResource } from "./resources/trees.ts";
 import { VersionsResource } from "./resources/versions.ts";
 import { WebhooksResource } from "./resources/webhooks.ts";
@@ -39,6 +40,7 @@ export class WrenClient {
   readonly query: QueryResource;
   readonly materialized: MaterializedResource;
   readonly webhooks: WebhooksResource;
+  readonly retention: RetentionResource;
 
   constructor(opts: WrenClientOptions) {
     this.baseUrl = opts.baseUrl.replace(/\/$/, "");
@@ -63,6 +65,7 @@ export class WrenClient {
     this.query = new QueryResource(this);
     this.materialized = new MaterializedResource(this);
     this.webhooks = new WebhooksResource(this);
+    this.retention = new RetentionResource(this);
   }
 
   async request<T>(
