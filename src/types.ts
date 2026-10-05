@@ -11,6 +11,29 @@ export interface DocumentResponse {
   createdAt: string;
   updatedAt: string;
   data: Record<string, unknown>;
+  /**
+   * Set on a write that changed nothing (the data equals the current version's, or a
+   * file has the same bytes): no version was created and `version` is the current one.
+   */
+  unchanged?: true;
+  /** The document's natural-key value, on writes to a collection that has one. */
+  naturalKey?: string;
+}
+
+export interface WriteOptions {
+  /**
+   * Write only if the document is still at this version (sent as `If-Match`); else
+   * the write is refused with a WrenVersionMismatchError carrying `currentVersion`.
+   * For an upsert by key, `0` means "only create" and `"*"` means "only update".
+   */
+  ifVersion?: number | "*";
+  /** Create a version even when the data is unchanged. */
+  force?: boolean;
+}
+
+export interface DeleteOptions {
+  /** Delete only if the document is still at this version. */
+  ifVersion?: number | "*";
 }
 
 export interface DocumentList {
@@ -45,12 +68,42 @@ export interface DiffEntry {
   oldValue?: unknown;
 }
 
+export interface DiffOptions {
+  /** Report nested changes path by path (e.g. `/a/b`) instead of whole top-level fields. */
+  deep?: boolean;
+}
+
 export interface DiffResult {
   id: string;
   collection: string;
   v1: number;
   v2: number;
   diff: DiffEntry[];
+}
+
+export interface RestoreOptions {
+  /** Put every document carrying this label back to the labeled version. */
+  label: string;
+  /** Also delete documents that don't carry the label (e.g. made by a test run). */
+  deleteUnlabeled?: boolean;
+}
+
+export interface RestoreResult {
+  label: string;
+  /** Documents that got the labeled content as a new version. */
+  restored: number;
+  /** Deleted documents brought back. */
+  undeleted: number;
+  /** Documents without the label that were deleted (deleteUnlabeled). */
+  deleted: number;
+  /** Documents already at the labeled content. */
+  unchanged: number;
+  /** The collections where something changed. */
+  collections: string[];
+}
+
+export interface TreeRestoreResult extends RestoreResult {
+  tree: string;
 }
 
 export interface CollectionInfo {
@@ -68,6 +121,18 @@ export interface Schema {
   listColumns: string[] | null;
   indexes: Array<{ path: string; kind: "btree" | "gin" | "trigram" }> | null;
   updatedAt: string;
+  /** Existing documents whose key was registered when `naturalKey` was set (PUT/PATCH). */
+  keysRegistered?: number;
+}
+
+/** Only the fields to change; `null` clears a field. */
+export interface PatchSchemaOptions {
+  schema?: Record<string, unknown> | null;
+  displayName?: string | null;
+  collectionType?: "json" | "binary";
+  naturalKey?: string | null;
+  listColumns?: string[] | null;
+  indexes?: Array<{ path: string; kind: "btree" | "gin" | "trigram" }> | null;
 }
 
 export interface SetSchemaOptions {
@@ -77,6 +142,20 @@ export interface SetSchemaOptions {
   naturalKey?: string;
   listColumns?: string[];
   indexes?: Array<{ path: string; kind: "btree" | "gin" | "trigram" }>;
+}
+
+export interface FileUploadOptions {
+  /** Upload only if the file is still at this version (0: only create; "*": only replace). */
+  ifVersion?: number | "*";
+  /** The file's MIME type, when `content` isn't a Blob that carries one. */
+  contentType?: string;
+}
+
+export interface FileDownloadOptions {
+  /** A version number to download instead of the current one. */
+  version?: number;
+  /** Download the version carrying this label. */
+  label?: string;
 }
 
 export interface TreeInfo {

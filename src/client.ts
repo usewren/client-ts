@@ -4,11 +4,13 @@ import {
   WrenNotFoundError,
   WrenUnauthorizedError,
   WrenValidationError,
+  WrenVersionMismatchError,
 } from "./errors.ts";
 import type { WrenClientOptions } from "./types.ts";
 import { CollectionsResource } from "./resources/collections.ts";
 import { DiffResource } from "./resources/diff.ts";
 import { DocumentsResource } from "./resources/documents.ts";
+import { FilesResource } from "./resources/files.ts";
 import { InvitesResource } from "./resources/invites.ts";
 import { KeysResource } from "./resources/keys.ts";
 import { LabelsResource } from "./resources/labels.ts";
@@ -23,11 +25,17 @@ import { WebhooksResource } from "./resources/webhooks.ts";
 
 type QueryParams = Record<string, string | undefined>;
 
+/** Extra request options: headers to add to the request. */
+export interface RequestOptions {
+  headers?: Record<string, string>;
+}
+
 export class WrenClient {
   private readonly baseUrl: string;
   private readonly headers: Record<string, string>;
 
   readonly documents: DocumentsResource;
+  readonly files: FilesResource;
   readonly versions: VersionsResource;
   readonly labels: LabelsResource;
   readonly diff: DiffResource;
@@ -53,6 +61,7 @@ export class WrenClient {
     }
 
     this.documents = new DocumentsResource(this);
+    this.files = new FilesResource(this);
     this.versions = new VersionsResource(this);
     this.labels = new LabelsResource(this);
     this.diff = new DiffResource(this);
@@ -73,7 +82,28 @@ export class WrenClient {
     path: string,
     body?: unknown,
     query?: QueryParams,
+    opts?: RequestOptions,
   ): Promise<T> {
+    const response = await this.send(method, path, body, query, opts);
+    const contentType = response.headers.get("content-type") ?? "";
+    return (contentType.includes("application/json")
+      ? await response.json()
+      : await response.text()) as T;
+  }
+
+  /** Like request(), but returns the response body as bytes (file downloads). */
+  async requestBytes(path: string, query?: QueryParams): Promise<ArrayBuffer> {
+    const response = await this.send("GET", path, undefined, query, { headers: { Accept: "*/*" } });
+    return response.arrayBuffer();
+  }
+
+  private async send(
+    method: string,
+    path: string,
+    body: unknown,
+    query: QueryParams | undefined,
+    opts: RequestOptions | undefined,
+  ): Promise<Response> {
     const url = new URL(this.baseUrl + "/api/v1" + path);
 
     if (query) {
@@ -84,28 +114,24 @@ export class WrenClient {
       }
     }
 
-    const init: RequestInit = {
-      method,
-      headers: { ...this.headers },
-    };
+    const headers: Record<string, string> = { ...this.headers, ...opts?.headers };
+    const init: RequestInit = { method, headers };
 
-    if (body !== undefined) {
+    if (body instanceof FormData) {
+      // fetch sets the multipart Content-Type (with its boundary) itself
+      delete headers["Content-Type"];
+      init.body = body;
+    } else if (body !== undefined) {
       init.body = JSON.stringify(body);
     }
 
     const response = await fetch(url.toString(), init);
+    if (response.ok) return response;
 
-    let responseBody: unknown;
     const contentType = response.headers.get("content-type") ?? "";
-    if (contentType.includes("application/json")) {
-      responseBody = await response.json();
-    } else {
-      responseBody = await response.text();
-    }
-
-    if (response.ok) {
-      return responseBody as T;
-    }
+    const responseBody: unknown = contentType.includes("application/json")
+      ? await response.json()
+      : await response.text();
 
     switch (response.status) {
       case 401:
@@ -114,6 +140,8 @@ export class WrenClient {
         throw new WrenForbiddenError(responseBody);
       case 404:
         throw new WrenNotFoundError(responseBody);
+      case 412:
+        throw new WrenVersionMismatchError(responseBody);
       case 422: {
         const details = extractValidationDetails(responseBody);
         throw new WrenValidationError(responseBody, details);
@@ -126,6 +154,16 @@ export class WrenClient {
         );
     }
   }
+}
+
+/**
+ * The If-Match header for a conditional write: a version number ("only if the
+ * document is still at this version"; 0 = only if it doesn't exist yet) or "*"
+ * ("only if it exists").
+ */
+export function ifMatch(ifVersion: number | "*" | undefined): RequestOptions | undefined {
+  if (ifVersion === undefined) return undefined;
+  return { headers: { "If-Match": ifVersion === "*" ? "*" : `"${ifVersion}"` } };
 }
 
 function extractValidationDetails(body: unknown): string[] {

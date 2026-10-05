@@ -1,5 +1,11 @@
 import type { WrenClient } from "../client.ts";
-import type { CollectionInfo, Schema, SetSchemaOptions, ValidateSchemaResult } from "../types.ts";
+import type {
+  CollectionInfo,
+  PatchSchemaOptions,
+  Schema,
+  SetSchemaOptions,
+  ValidateSchemaResult,
+} from "../types.ts";
 
 export class CollectionsResource {
   constructor(private readonly client: WrenClient) {}
@@ -14,6 +20,14 @@ export class CollectionsResource {
 
   setSchema(collection: string, opts: SetSchemaOptions): Promise<Schema> {
     return this.client.request<Schema>("PUT", `/${collection}/_schema`, opts);
+  }
+
+  /**
+   * Change only the given schema fields (the others keep their values; `null` clears
+   * one). Creates the schema if the collection has none yet.
+   */
+  patchSchema(collection: string, changes: PatchSchemaOptions): Promise<Schema> {
+    return this.client.request<Schema>("PATCH", `/${collection}/_schema`, changes);
   }
 
   deleteSchema(collection: string): Promise<{ collection: string; deleted: true }> {
