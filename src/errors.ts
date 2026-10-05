@@ -36,3 +36,19 @@ export class WrenValidationError extends WrenError {
     this.name = "WrenValidationError";
   }
 }
+
+/**
+ * A conditional write (`ifVersion`) found the document at another version — someone
+ * else wrote it since you read it. Re-read it and re-apply your change.
+ * `currentVersion` is the version it is at now (0: it doesn't exist).
+ */
+export class WrenVersionMismatchError extends WrenError {
+  public readonly currentVersion: number;
+  constructor(body: unknown) {
+    const current = (body as { currentVersion?: unknown } | null)?.currentVersion;
+    const currentVersion = typeof current === "number" ? current : 0;
+    super(412, body, `Version mismatch: the document is at version ${currentVersion}`);
+    this.name = "WrenVersionMismatchError";
+    this.currentVersion = currentVersion;
+  }
+}
