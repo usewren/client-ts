@@ -5,5 +5,6 @@ export {
   WrenNotFoundError,
   WrenUnauthorizedError,
   WrenValidationError,
+  WrenVersionMismatchError,
 } from "./errors.ts";
 export type * from "./types.ts";

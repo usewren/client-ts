@@ -84,7 +84,7 @@ export async function publicGet(path: string): Promise<Response> {
   return fetch(`${WREN_URL}${path}`, { headers: { Accept: "application/json" } });
 }
 
-/** Upload a file to a binary collection (the TS client has no asset methods). */
+/** Upload a file to a binary collection with a plain POST (the client uploads files by name only). */
 export async function uploadAsset(apiKey: string, collection: string, name: string, content: string): Promise<{ id: string }> {
   const form = new FormData();
   form.append("file", new File([content], name, { type: "text/plain" }));

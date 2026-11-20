@@ -5,6 +5,7 @@ import type {
   TreeNodeResult,
   TreePromoteOptions,
   TreePromoteResult,
+  TreeRestoreResult,
 } from "../types.ts";
 
 function normalizePath(path: string): string {
@@ -65,6 +66,19 @@ export class TreesResource {
       "POST",
       `/tree/${encodeURIComponent(name)}/_promote`,
       { label: opts?.label, from: opts?.from },
+    );
+  }
+
+  /**
+   * Put every document mounted in the tree back to the version carrying `label`
+   * (files included), in one transaction. Needs write access to every collection in
+   * the tree (WrenForbiddenError otherwise; nothing changes).
+   */
+  restore(name: string, opts: { label: string }): Promise<TreeRestoreResult> {
+    return this.client.request<TreeRestoreResult>(
+      "POST",
+      `/tree/${encodeURIComponent(name)}/_restore`,
+      { label: opts.label },
     );
   }
 }
