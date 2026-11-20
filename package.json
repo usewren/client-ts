@@ -2,7 +2,7 @@
   "name": "@usewren/client",
   "version": "0.10.0",
   "description": "TypeScript/JavaScript client for the Wren versioned document store",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "exports": {
     ".": {
